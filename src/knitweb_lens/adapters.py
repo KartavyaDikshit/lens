@@ -683,6 +683,30 @@ class LocalFilesAdapter:
                     )
                     yield from adapter.iter_chunks()
                     continue
+                if isinstance(data, dict) and "rows" in data:
+                    rows = data.get("rows")
+                    if not isinstance(rows, list):
+                        raise ValueError("mapping rows JSON rows must be a list")
+                    adapter = MappingRowsAdapter(
+                        rows,
+                        source_id=f"{self._source_id}:{path.name}",
+                        source_uri=str(path),
+                        priority=self._priority,
+                    )
+                    yield from adapter.iter_chunks()
+                    continue
+                if isinstance(data, dict) and "vector_results" in data:
+                    results = data.get("vector_results")
+                    if not isinstance(results, list):
+                        raise ValueError("vector results JSON vector_results must be a list")
+                    adapter = VectorResultsAdapter(
+                        results,
+                        source_id=f"{self._source_id}:{path.name}",
+                        source_uri=str(path),
+                        priority=self._priority,
+                    )
+                    yield from adapter.iter_chunks()
+                    continue
                 text = record_to_text(data)
                 title = record_title(data, fallback=path.name)
                 chunks = chunk_text(text)

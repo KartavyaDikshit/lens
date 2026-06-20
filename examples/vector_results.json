@@ -1,0 +1,22 @@
+{
+  "vector_results": [
+    {
+      "id": "vector:hit:1",
+      "score": 0.87,
+      "payload": {
+        "cid": "cid:vector:1",
+        "title": "Vector result row",
+        "text": "Vector stores can feed Lens as optional read models without becoming a required dependency."
+      }
+    },
+    {
+      "id": "vector:hit:2",
+      "score": 0.61,
+      "payload": {
+        "cid": "cid:vector:2",
+        "title": "Offline adapter boundary",
+        "text": "Lens quantizes external similarity scores into integer weights for deterministic retrieval."
+      }
+    }
+  ]
+}

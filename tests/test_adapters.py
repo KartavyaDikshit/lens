@@ -239,6 +239,60 @@ def test_local_files_adapter_loads_interaction_json(tmp_path):
     assert "Human feedback" in chunks[0].text
 
 
+def test_local_files_adapter_loads_mapping_rows_json(tmp_path):
+    path = tmp_path / "neo4j_rows.json"
+    path.write_text(
+        json.dumps(
+            {
+                "rows": [
+                    {
+                        "id": "row:1",
+                        "title": "Neo4j path row",
+                        "text": "Graph rows can ground Lens interpretation.",
+                        "path": [{"rel": "supports", "dst": "row:0"}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    chunks = tuple(LocalFilesAdapter([path]).iter_chunks())
+
+    assert len(chunks) == 1
+    assert chunks[0].ref.source_id == "local-files:neo4j_rows.json"
+    assert chunks[0].ref.relation_path == ("supports->row:0",)
+
+
+def test_local_files_adapter_loads_vector_results_json(tmp_path):
+    path = tmp_path / "vector_results.json"
+    path.write_text(
+        json.dumps(
+            {
+                "vector_results": [
+                    {
+                        "id": "hit:1",
+                        "score": 0.91,
+                        "payload": {
+                            "cid": "cid:hit",
+                            "title": "Vector hit",
+                            "text": "Vector results remain optional read models.",
+                        },
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    chunks = tuple(LocalFilesAdapter([path]).iter_chunks())
+
+    assert len(chunks) == 1
+    assert chunks[0].ref.source_id == "local-files:vector_results.json"
+    assert chunks[0].ref.cid == "cid:hit"
+    assert chunks[0].weight == 910
+
+
 def test_interaction_log_adapter_rejects_non_object_events():
     with pytest.raises(ValueError, match="interaction log events must be objects"):
         tuple(InteractionLogAdapter(["bad"]).iter_chunks())

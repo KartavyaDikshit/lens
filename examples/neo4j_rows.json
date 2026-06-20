@@ -1,0 +1,23 @@
+{
+  "rows": [
+    {
+      "id": "neo4j:claim:1",
+      "title": "Neo4j claim row",
+      "text": "Neo4j path rows can be normalized into Lens chunks with relation citations.",
+      "path": [
+        {
+          "rel": "supports",
+          "dst": "neo4j:evidence:1"
+        }
+      ],
+      "weight": 3
+    },
+    {
+      "id": "neo4j:evidence:1",
+      "title": "Neo4j evidence row",
+      "text": "A graph database remains the query engine; Lens only reads exported rows.",
+      "path": [],
+      "weight": 2
+    }
+  ]
+}

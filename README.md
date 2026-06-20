@@ -46,6 +46,8 @@ python -m pip install -e ".[dev]"
 lens query "What is Lens for?" README.md --json
 lens export-context "What is Lens for?" README.md --out context.json
 lens render-context context.json --answer
+lens query "How do graph rows work?" examples/neo4j_rows.json --json
+lens query "How are vector scores handled?" examples/vector_results.json --json
 lens capabilities
 lens inspect-pulse tests/fixtures/pulse_web_export.json
 python tools/generate_pulse_fixture.py --pulse-src ../pulse/src

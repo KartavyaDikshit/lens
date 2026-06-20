@@ -1,0 +1,23 @@
+{
+  "rows": [
+    {
+      "id": "lightrag:entity:lens",
+      "title": "Lens entity",
+      "content": "LightRAG-style rows can describe entities, claims, and relation paths.",
+      "relationships": [
+        {
+          "type": "interprets",
+          "target": "lightrag:entity:fabric"
+        }
+      ],
+      "weight": 4
+    },
+    {
+      "id": "lightrag:entity:fabric",
+      "title": "Fabric entity",
+      "content": "The fabric remains the source system; Lens builds temporary interpretation sessions.",
+      "relationships": [],
+      "weight": 2
+    }
+  ]
+}

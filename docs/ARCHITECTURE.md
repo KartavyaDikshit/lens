@@ -55,6 +55,13 @@ and publication fields in chunk references and metadata. It does not implement
 ActivityPub inbox/outbox delivery, follow side effects, federation, moderation,
 or social graph storage.
 
+## Graph And Vector Rows
+
+`LocalFilesAdapter` recognizes JSON fixtures with `rows` as graph-query rows
+and `vector_results` as vector-store hits. This keeps examples runnable through
+the same CLI path while avoiding mandatory Neo4j, LightRAG, or vector database
+dependencies. External similarity scores are quantized into integer weights.
+
 ## Context Bundles
 
 Lens context bundles are portable JSON snapshots of the interpret context. They
