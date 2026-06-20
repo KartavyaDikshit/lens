@@ -12,6 +12,10 @@ It accepts ActivityStreams exports as another read-only evidence source for
 online human/agent interaction graphs. ActivityPub server behavior remains out
 of scope.
 
+It accepts already-resolved OriginTrail Knowledge Asset snapshots and preserves
+UAL citations. OriginTrail DKG resolution, querying, publishing, and anchoring
+remain out of scope for Lens.
+
 ## Current Priorities
 
 ### 1. Real Pulse Fixture

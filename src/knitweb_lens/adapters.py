@@ -198,6 +198,150 @@ class RdfJsonLdAdapter(JsonLdAdapter):
         super().__init__(doc, source_id=source_id, source_uri=source_uri, priority=priority)
 
 
+def _origintrail_ual(asset: dict[str, Any]) -> str:
+    for key in ("ual", "UAL", "assetUAL", "asset_ual"):
+        value = asset.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def _origintrail_assets(data: dict[str, Any] | Iterable[dict[str, Any]]) -> tuple[dict[str, Any], ...]:
+    if isinstance(data, dict):
+        raw_assets: Any = data.get("assets")
+        if raw_assets is None:
+            raw_assets = data.get("knowledgeAssets")
+        if raw_assets is None:
+            raw_assets = [data]
+    else:
+        raw_assets = data
+    if not isinstance(raw_assets, Iterable):
+        raise ValueError("OriginTrail assets must be objects")
+    assets: list[dict[str, Any]] = []
+    for asset in raw_assets:
+        if not isinstance(asset, dict):
+            raise ValueError("OriginTrail assets must be objects")
+        assets.append(asset)
+    return tuple(assets)
+
+
+def _looks_like_origintrail_asset(data: dict[str, Any]) -> bool:
+    has_ual = bool(_origintrail_ual(data))
+    return has_ual and any(
+        key in data
+        for key in (
+            "@graph",
+            "assertion",
+            "assertionId",
+            "assertion_id",
+            "graph",
+            "knowledgeAsset",
+            "public",
+            "publicAssertion",
+            "public_assertion",
+        )
+    )
+
+
+def _origintrail_records(asset: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    for key in (
+        "publicAssertion",
+        "public_assertion",
+        "assertion",
+        "graph",
+        "knowledgeAsset",
+        "public",
+    ):
+        value = asset.get(key)
+        if isinstance(value, dict) and isinstance(value.get("@graph"), list):
+            return tuple(item for item in value["@graph"] if isinstance(item, dict))
+        if isinstance(value, list):
+            return tuple(item for item in value if isinstance(item, dict))
+        if isinstance(value, dict):
+            return (value,)
+    graph = asset.get("@graph")
+    if isinstance(graph, list):
+        return tuple(item for item in graph if isinstance(item, dict))
+    return (asset,)
+
+
+def _origintrail_relation_path(record: dict[str, Any]) -> tuple[str, ...]:
+    path = list(_edge_path(record.get("edges") or record.get("relationships") or ()))
+    for rel, key in (
+        ("same-as", "sameAs"),
+        ("subject", "subject"),
+        ("predicate", "predicate"),
+        ("object", "object"),
+    ):
+        _append_relation(path, rel, record.get(key))
+    return tuple(dict.fromkeys(path))
+
+
+class OriginTrailUALAdapter:
+    """Adapter for already-resolved OriginTrail Knowledge Asset snapshots.
+
+    This preserves UALs as citations. It does not resolve UALs, publish assets,
+    anchor assertions, run SPARQL, or connect to a DKG node.
+    """
+
+    def __init__(
+        self,
+        assets: dict[str, Any] | Iterable[dict[str, Any]],
+        *,
+        source_id: str = "origintrail-ual",
+        source_uri: str = "",
+        priority: int = 64,
+    ) -> None:
+        self._assets = _origintrail_assets(assets)
+        self._source_id = source_id
+        self._source_uri = source_uri
+        self._priority = priority
+
+    @property
+    def source_id(self) -> str:
+        return self._source_id
+
+    def iter_chunks(self) -> Iterable[Chunk]:
+        for asset_index, asset in enumerate(self._assets):
+            ual = _origintrail_ual(asset)
+            asset_id = str(asset.get("asset_id") or asset.get("assetId") or asset.get("id") or ual)
+            assertion_id = asset.get("assertion_id") or asset.get("assertionId")
+            for record_index, record in enumerate(_origintrail_records(asset)):
+                text = record_to_text(record)
+                if not text.strip():
+                    continue
+                node_id = str(
+                    record.get("id")
+                    or record.get("@id")
+                    or record.get("cid")
+                    or stable_id("origintrail-record", {"ual": ual, "record": record})
+                )
+                ref = ChunkRef(
+                    source_id=self._source_id,
+                    source_uri=ual or self._source_uri,
+                    cid=str(record["cid"]) if record.get("cid") else None,
+                    node_id=node_id,
+                    relation_path=_origintrail_relation_path(record),
+                )
+                yield Chunk(
+                    ref=ref,
+                    title=record_title(record, fallback=node_id),
+                    text=text,
+                    record=record,
+                    priority=self._priority,
+                    weight=int(asset.get("weight", 1)),
+                    distance=int(asset.get("distance", 0)),
+                    metadata=_metadata(
+                        adapter="origintrail-ual",
+                        asset_id=asset_id or None,
+                        asset_index=asset_index,
+                        assertion_id=str(assertion_id) if assertion_id is not None else None,
+                        record_index=record_index,
+                        ual=ual or None,
+                    ),
+                )
+
+
 class FabricWebAdapter:
     """Adapter for a Knitweb `Web`-like object without importing knitweb."""
 
@@ -500,6 +644,15 @@ class LocalFilesAdapter:
                 raise IsADirectoryError(f"source path is a directory: {path}")
             if path.suffix.lower() == ".json":
                 data = read_json(path)
+                if isinstance(data, dict) and _looks_like_origintrail_asset(data):
+                    adapter = OriginTrailUALAdapter(
+                        data,
+                        source_id=f"{self._source_id}:{path.name}",
+                        source_uri=str(path),
+                        priority=self._priority,
+                    )
+                    yield from adapter.iter_chunks()
+                    continue
                 if isinstance(data, dict) and "@graph" in data:
                     adapter = JsonLdAdapter(
                         data,

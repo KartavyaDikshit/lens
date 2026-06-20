@@ -34,6 +34,8 @@ p2p/crypto systems without inheriting their heavy runtime dependencies:
 Lens is compatible with Knitweb/Pulse and OriginTrail as a read-only interpret
 layer. It does not replace their fabric storage, p2p replication, canonical CID
 generation, attestation, accounting, DKG publishing, or anchoring.
+For OriginTrail, Lens consumes already-resolved Knowledge Asset snapshots and
+preserves UALs as citations; it does not resolve UALs or connect to DKG nodes.
 
 ## Quick Start
 
@@ -119,6 +121,7 @@ Implemented in v1:
 - `FabricWebAdapter` for in-memory Knitweb `Web`-like objects.
 - `JsonLdAdapter` for Pulse/Knitweb JSON-LD exports.
 - `RdfJsonLdAdapter` for generic JSON-LD graph documents.
+- `OriginTrailUALAdapter` for already-resolved OriginTrail Knowledge Asset snapshots.
 - `LocalFilesAdapter` for Markdown, text, JSON, and JSON-LD files.
 - `InteractionLogAdapter` for exported human/agent interaction logs.
 - `ActivityStreamsAdapter` for exported ActivityStreams objects and collections.

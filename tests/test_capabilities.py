@@ -13,11 +13,13 @@ def test_compatibility_report_separates_lens_from_knitweb_and_origintrail():
     assert report["publishes_to_origintrail"] is False
     assert "knitweb-pulse-jsonld-export" in report["compatible_read_models"]
     assert "origintrail-dkg-ual-citation" in report["compatible_read_models"]
+    assert "origintrail-resolved-asset-snapshot" in report["compatible_read_models"]
     assert "human-agent-interaction-log" in report["compatible_read_models"]
     assert "activitystreams-object-or-collection" in report["compatible_read_models"]
     assert "ephemeral-interpret-session" in report["owned_capabilities"]
     assert "p2p-transport-and-replication" in report["delegated_to_knitweb"]
     assert "dkg-asset-publishing" in report["delegated_to_origintrail"]
+    assert "dkg-querying-and-node-connectivity" in report["delegated_to_origintrail"]
     assert "activitypub-federated-server" in report["non_goals"]
 
 

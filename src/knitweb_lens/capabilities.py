@@ -10,6 +10,7 @@ COMPATIBLE_READ_MODELS = (
     "knitweb-pulse-jsonld-export",
     "knitweb-web-like-object",
     "origintrail-dkg-ual-citation",
+    "origintrail-resolved-asset-snapshot",
     "generic-jsonld-document",
     "graph-query-row",
     "vector-result-row",
@@ -42,6 +43,7 @@ DELEGATED_TO_KNITWEB = (
 DELEGATED_TO_ORIGINTRAIL = (
     "dkg-asset-publishing",
     "dkg-ual-resolution",
+    "dkg-querying-and-node-connectivity",
     "dkg-anchoring",
     "cross-network-knowledge-asset-discovery",
 )

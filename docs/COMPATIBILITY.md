@@ -29,6 +29,7 @@ should not become another fabric runtime.
 
 - DKG asset publishing.
 - DKG UAL resolution.
+- DKG querying and node connectivity.
 - DKG anchoring.
 - Cross-network knowledge asset discovery.
 
@@ -40,6 +41,8 @@ not publish assets, anchor state, or present itself as a DKG implementation.
 - Knitweb/Pulse JSON-LD exports.
 - Knitweb `Web`-like objects.
 - OriginTrail DKG UAL citations and resolved JSON-LD documents.
+- OriginTrail Knowledge Asset snapshots that have already been resolved by
+  OriginTrail tooling.
 - Generic JSON-LD documents.
 - Graph-query rows from LightRAG, Neo4j, or similar stores.
 - Vector result rows.
@@ -55,6 +58,11 @@ ActivityStreams is a compatibility input only. Lens may normalize objects and
 collections into cited chunks. It must not implement ActivityPub inbox/outbox
 delivery, federation, follow side effects, moderation, or durable social graph
 storage.
+
+OriginTrail snapshots are compatibility inputs only. Lens may preserve UALs,
+assertion ids, asset ids, and graph records in citations. Lens must not perform
+UAL resolution, DKG querying, publishing, anchoring, token operations, or node
+connectivity.
 
 ## Guardrail
 

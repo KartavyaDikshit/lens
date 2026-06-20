@@ -9,6 +9,7 @@ from knitweb_lens import (
     JsonLdAdapter,
     LocalFilesAdapter,
     MappingRowsAdapter,
+    OriginTrailUALAdapter,
     RLMHarness,
     VectorResultsAdapter,
 )
@@ -94,6 +95,74 @@ def test_jsonld_adapter_rejects_non_list_graph():
 def test_jsonld_adapter_rejects_non_object_graph_entries():
     with pytest.raises(ValueError, match="@graph entries must be objects"):
         tuple(JsonLdAdapter({"@graph": ["bad"]}).iter_chunks())
+
+
+def test_origintrail_ual_adapter_preserves_resolved_asset_citation():
+    ual = "did:dkg:hardhat:31337/0xabc/42"
+    asset = {
+        "ual": ual,
+        "assetId": "ka:42",
+        "assertionId": "assertion:1",
+        "publicAssertion": {
+            "@graph": [
+                {
+                    "@id": "urn:batch:1",
+                    "title": "Verified batch",
+                    "description": "OriginTrail resolved assertions can ground Lens answers.",
+                    "sameAs": "bafyfabric",
+                    "edges": [{"type": "derived-from", "target": "urn:raw:1"}],
+                }
+            ]
+        },
+    }
+
+    chunks = tuple(OriginTrailUALAdapter([asset]).iter_chunks())
+
+    assert len(chunks) == 1
+    assert chunks[0].ref.source_uri == ual
+    assert chunks[0].ref.node_id == "urn:batch:1"
+    assert chunks[0].ref.relation_path == ("derived-from->urn:raw:1", "same-as->bafyfabric")
+    assert "ground Lens answers" in chunks[0].text
+    assert chunks[0].metadata == (
+        ("adapter", "origintrail-ual"),
+        ("assertion_id", "assertion:1"),
+        ("asset_id", "ka:42"),
+        ("asset_index", 0),
+        ("record_index", 0),
+        ("ual", ual),
+    )
+
+
+def test_local_files_adapter_loads_origintrail_snapshot_before_generic_jsonld(tmp_path):
+    ual = "did:dkg:otp:2043/0xdef/7"
+    path = tmp_path / "origintrail.json"
+    path.write_text(
+        json.dumps(
+            {
+                "ual": ual,
+                "@graph": [
+                    {
+                        "@id": "urn:asset:7",
+                        "name": "Resolved Knowledge Asset",
+                        "description": "Lens cites the UAL instead of becoming a DKG client.",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    chunks = tuple(LocalFilesAdapter([path]).iter_chunks())
+
+    assert len(chunks) == 1
+    assert chunks[0].ref.source_id == "local-files:origintrail.json"
+    assert chunks[0].ref.source_uri == ual
+    assert chunks[0].metadata[0] == ("adapter", "origintrail-ual")
+
+
+def test_origintrail_ual_adapter_rejects_non_object_assets():
+    with pytest.raises(ValueError, match="OriginTrail assets must be objects"):
+        OriginTrailUALAdapter(["bad"])
 
 
 def test_local_files_adapter_reports_missing_source(tmp_path):

@@ -21,6 +21,14 @@ Lens v1 is an ephemeral interpret layer over content-addressed fabric data.
 4. An `LLMAdapter` turns selected chunks into an answer.
 5. `InterpretAnswer` returns text plus citations back to each `ChunkRef`.
 
+## OriginTrail Snapshots
+
+Lens can read already-resolved OriginTrail Knowledge Asset snapshots and carry
+their UALs in `ChunkRef.source_uri`. This makes DKG-sourced assertions usable as
+grounding evidence without making Lens a DKG client. UAL resolution, SPARQL
+querying, asset publishing, assertion anchoring, and node connectivity stay with
+OriginTrail tooling.
+
 ## Human And Agent Interactions
 
 Lens can consume exported human/agent interaction logs as read-only evidence.
