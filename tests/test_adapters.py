@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from knitweb_lens import JsonLdAdapter, LocalFilesAdapter, MappingRowsAdapter, RLMHarness, VectorResultsAdapter
 
 
@@ -74,3 +76,28 @@ def test_pulse_web_export_fixture_round_trips_into_cited_answer():
     assert "bafyfinisheditem" in refs_by_cid
     assert "bafyrootmaterial" in refs_by_cid
     assert refs_by_cid["bafyfinisheditem"].relation_path == ("derived-from->bafyrootmaterial",)
+
+
+def test_jsonld_adapter_rejects_non_list_graph():
+    with pytest.raises(ValueError, match="@graph must be a list"):
+        tuple(JsonLdAdapter({"@graph": {"id": "bad"}}).iter_chunks())
+
+
+def test_jsonld_adapter_rejects_non_object_graph_entries():
+    with pytest.raises(ValueError, match="@graph entries must be objects"):
+        tuple(JsonLdAdapter({"@graph": ["bad"]}).iter_chunks())
+
+
+def test_local_files_adapter_reports_missing_source(tmp_path):
+    missing = tmp_path / "missing.md"
+
+    with pytest.raises(FileNotFoundError, match="source path not found"):
+        tuple(LocalFilesAdapter([missing]).iter_chunks())
+
+
+def test_local_files_adapter_reports_invalid_json(tmp_path):
+    path = tmp_path / "bad.json"
+    path.write_text("{not-json", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid JSON"):
+        tuple(LocalFilesAdapter([path]).iter_chunks())

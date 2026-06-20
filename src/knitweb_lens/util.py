@@ -21,7 +21,11 @@ def stable_id(prefix: str, value: Any) -> str:
 
 
 def read_json(path: str | Path) -> Any:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    source = Path(path)
+    try:
+        return json.loads(source.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid JSON in {source}: {exc.msg}") from exc
 
 
 def tokenize(text: str) -> tuple[str, ...]:

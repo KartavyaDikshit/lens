@@ -31,3 +31,13 @@ def test_cli_context_export_render_and_answer(tmp_path, capsys):
     assert main(["answer-context", str(context), "--json"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["citations"]
+
+
+def test_cli_rejects_conflicting_output_flags(tmp_path, capsys):
+    path = tmp_path / "note.md"
+    path.write_text("Output flags are mutually exclusive.", encoding="utf-8")
+
+    code = main(["query", "flags", str(path), "--json", "--markdown"])
+
+    assert code == 2
+    assert "cannot be used together" in capsys.readouterr().err

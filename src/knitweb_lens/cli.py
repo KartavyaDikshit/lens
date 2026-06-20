@@ -26,6 +26,11 @@ def _print_json(value: dict) -> None:
     print(json.dumps(value, indent=2, sort_keys=True))
 
 
+def _reject_conflicting_outputs(args: argparse.Namespace) -> None:
+    if getattr(args, "json", False) and getattr(args, "markdown", False):
+        raise ValueError("--json and --markdown cannot be used together")
+
+
 def _write_text_or_print(text: str, out: str | None) -> None:
     if out:
         Path(out).write_text(text, encoding="utf-8")
@@ -41,6 +46,7 @@ def cmd_index(args: argparse.Namespace) -> int:
 
 
 def cmd_query(args: argparse.Namespace) -> int:
+    _reject_conflicting_outputs(args)
     harness = RLMHarness()
     answer = harness.query(
         args.query,
@@ -97,6 +103,7 @@ def cmd_render_context(args: argparse.Namespace) -> int:
 
 
 def cmd_answer_context(args: argparse.Namespace) -> int:
+    _reject_conflicting_outputs(args)
     bundle = json.loads(Path(args.context_file).read_text(encoding="utf-8"))
     answer = answer_from_context(bundle)
     if args.json:

@@ -60,6 +60,11 @@ class JsonLdAdapter:
 
     def iter_chunks(self) -> Iterable[Chunk]:
         graph = self._doc.get("@graph", [])
+        if not isinstance(graph, list):
+            raise ValueError("JSON-LD document @graph must be a list")
+        for node in graph:
+            if not isinstance(node, dict):
+                raise ValueError("JSON-LD @graph entries must be objects")
         for index, node in enumerate(sorted(graph, key=lambda item: str(item.get("id", "")))):
             record = node.get("record", node)
             node_id = str(node.get("id") or stable_id("jsonld-node", node))
@@ -158,6 +163,10 @@ class LocalFilesAdapter:
 
     def iter_chunks(self) -> Iterable[Chunk]:
         for path in sorted(self._paths, key=lambda item: str(item)):
+            if not path.exists():
+                raise FileNotFoundError(f"source path not found: {path}")
+            if path.is_dir():
+                raise IsADirectoryError(f"source path is a directory: {path}")
             if path.suffix.lower() == ".json":
                 data = read_json(path)
                 if isinstance(data, dict) and "@graph" in data:
@@ -304,4 +313,3 @@ class VectorResultsAdapter:
                 distance=0,
                 metadata=_metadata(index=index, adapter="vector-results"),
             )
-
