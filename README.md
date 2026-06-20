@@ -1,0 +1,99 @@
+# Lens
+
+Lens is the pure-Python interpret layer for Knitweb. It reads a Pulse/Knitweb
+fabric, focuses the relevant records, and returns provenance-cited answers. It
+does not write durable facts, run consensus, or require a live LLM/vector
+service for v1.
+
+- Repository: `github.com/knitweb/lens`
+- Distribution: `knitweb-lens`
+- Import: `knitweb_lens`
+- CLI: `lens`
+- HTTP route: `POST /interpret`
+
+## Why Lens
+
+Pulse moves the signal through the fabric. Lens focuses that fabric into a
+task-specific interpretation. A Lens session is ephemeral: it loads chunks from
+adapters, ranks them deterministically, prunes to a context budget, and emits an
+answer with citations back to original source ids and CIDs when available.
+
+The v1 design borrows the useful patterns from graph RAG, MeTTa/Hyperon, and
+p2p/crypto systems without inheriting their heavy runtime dependencies:
+
+- adapter-first ingestion, like mature RAG frameworks;
+- graph and provenance paths, like LightRAG-style graph retrieval;
+- symbolic atom/chunk iteration, inspired by MeTTa over Atomspace;
+- content-derived identity and tamper visibility, aligned with CID/DID/VC
+  practice;
+- no background daemon or channel bridge in the core, keeping the ClaudeClaw
+  lesson of isolation and explicit boundaries.
+
+## Quick Start
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+lens query "What is Lens for?" README.md --json
+python -m pytest
+```
+
+Run the standard-library HTTP endpoint:
+
+```bash
+lens serve README.md --host 127.0.0.1 --port 8765
+curl -s http://127.0.0.1:8765/interpret \
+  -H 'content-type: application/json' \
+  -d '{"query":"What does Lens preserve?"}'
+```
+
+## Core API
+
+```python
+from knitweb_lens import LocalFilesAdapter, RLMHarness
+
+harness = RLMHarness()
+answer = harness.query(
+    "How does Lens cite sources?",
+    adapters=[LocalFilesAdapter(["README.md"])],
+)
+print(answer.text)
+```
+
+Adapters normalize source systems into `Chunk` objects. `Retriever` ranks chunks
+with integer-only scores and deterministic tie breaks. `RLMHarness` supplies an
+offline deterministic model adapter by default, so all tests run without API
+keys, embeddings, network access, or vector databases.
+
+## Adapters
+
+Implemented in v1:
+
+- `FabricWebAdapter` for in-memory Knitweb `Web`-like objects.
+- `JsonLdAdapter` for Pulse/Knitweb JSON-LD exports.
+- `RdfJsonLdAdapter` for generic JSON-LD graph documents.
+- `LocalFilesAdapter` for Markdown, text, JSON, and JSON-LD files.
+- `MappingRowsAdapter` for Neo4j/LightRAG-style row dictionaries.
+- `VectorResultsAdapter` for vector-store result dictionaries.
+
+Optional live integrations should wrap these adapters instead of making Lens
+depend on a service SDK.
+
+## Project Docs
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Pulse backlog extraction](docs/PULSE_BACKLOG.md)
+- [Research references](docs/REFERENCES.md)
+- [Developer outreach](docs/OUTREACH.md)
+- [Top 10 feedback targets](docs/FEEDBACK_TARGETS.md)
+- [GitHub Pages landing page](docs/index.html)
+
+## Development
+
+```bash
+python -m pytest
+python -m build
+```
+
+Lens is Apache-2.0 and designed for small, reviewable contributions.

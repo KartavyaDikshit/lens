@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knitweb Lens</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #55616d;
+      --line: #d8e0e7;
+      --paper: #f7fafc;
+      --accent: #1f7a6d;
+      --accent-2: #b23b53;
+      --gold: #b8872d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.5;
+    }
+    header {
+      min-height: 92vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      align-items: center;
+      gap: 48px;
+      padding: 48px clamp(24px, 6vw, 96px) 32px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+    nav {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 6vw, 96px);
+      border-bottom: 1px solid rgba(216, 224, 231, 0.75);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+    }
+    nav a {
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 650;
+      font-size: 14px;
+    }
+    .links {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(46px, 8vw, 92px);
+      line-height: 0.96;
+      letter-spacing: 0;
+    }
+    .lead {
+      max-width: 680px;
+      margin: 26px 0 0;
+      font-size: clamp(18px, 2.2vw, 25px);
+      color: var(--muted);
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--ink);
+      color: #fff;
+      background: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .button.secondary {
+      color: var(--ink);
+      background: #fff;
+    }
+    .visual img {
+      width: 100%;
+      max-height: 74vh;
+      object-fit: contain;
+      display: block;
+      border: 1px solid var(--line);
+    }
+    main {
+      padding: 40px clamp(24px, 6vw, 96px) 72px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 28px;
+    }
+    section {
+      padding: 22px 0;
+      border-top: 1px solid var(--line);
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #edf3f6;
+      padding: 2px 5px;
+    }
+    @media (max-width: 820px) {
+      header {
+        grid-template-columns: 1fr;
+        padding-top: 96px;
+        gap: 28px;
+      }
+      nav {
+        height: auto;
+        min-height: 64px;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="https://github.com/knitweb/lens">Knitweb Lens</a>
+    <div class="links">
+      <a href="./ARCHITECTURE.md">Architecture</a>
+      <a href="./PULSE_BACKLOG.md">Pulse Backlog</a>
+      <a href="./OUTREACH.md">Contribute</a>
+    </div>
+  </nav>
+  <header>
+    <div>
+      <h1>Lens</h1>
+      <p class="lead">A pure-Python interpret layer that reads the Knitweb fabric, focuses relevant chunks, and returns provenance-cited answers without requiring a live LLM or vector service.</p>
+      <div class="actions">
+        <a class="button" href="https://github.com/knitweb/lens">View Repository</a>
+        <a class="button secondary" href="./REFERENCES.md">Research Notes</a>
+      </div>
+    </div>
+    <div class="visual">
+      <img src="./assets/lens-fabric.png" alt="Content-addressed fabric focused through a lens">
+    </div>
+  </header>
+  <main>
+    <div class="grid">
+      <section>
+        <h2>Read Only</h2>
+        <p>Lens consumes Pulse Web exports and source rows. It does not mutate fabric records or become a consensus layer.</p>
+      </section>
+      <section>
+        <h2>Cited</h2>
+        <p>Every answer keeps source ids, URIs, CIDs, node ids, and relation paths visible for downstream verification.</p>
+      </section>
+      <section>
+        <h2>Offline First</h2>
+        <p>The default RLM harness is deterministic and testable with <code>python -m pytest</code>. Live models are optional adapters.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
+

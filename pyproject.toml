@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "knitweb-lens"
+version = "0.1.0"
+description = "Lens: a pure-Python, offline-testable RLM interpret layer over Knitweb fabric data."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "febuz", email = "develuse@gmail.com" }]
+keywords = [
+    "knitweb",
+    "pulse",
+    "rlm",
+    "rag",
+    "retrieval",
+    "provenance",
+    "content-addressing",
+    "p2p",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/knitweb/lens"
+Repository = "https://github.com/knitweb/lens"
+Documentation = "https://knitweb.github.io/lens/"
+Issues = "https://github.com/knitweb/lens/issues"
+
+[project.scripts]
+lens = "knitweb_lens.cli:main"
+knitweb-lens = "knitweb_lens.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build>=1"]
+pdf = ["reportlab>=4", "pdfplumber>=0.11", "pypdf>=4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
