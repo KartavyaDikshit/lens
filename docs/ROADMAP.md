@@ -33,6 +33,7 @@ Implemented baseline:
 - integer confidence report on every answer;
 - abstention below the default confidence threshold;
 - context replay preserves the same reliability behavior.
+- offline JSON eval harness via `lens eval`.
 
 Related issues:
 

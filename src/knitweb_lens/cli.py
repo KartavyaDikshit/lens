@@ -10,6 +10,7 @@ from typing import Iterable
 
 from .adapters import LocalFilesAdapter, SourceAdapter
 from .context import answer_from_context, answer_markdown, session_from_context, session_markdown
+from .eval import load_eval_cases, run_eval
 from .rlm import RLMHarness
 from .server import serve
 from .util import stable_json
@@ -120,6 +121,13 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_eval(args: argparse.Namespace) -> int:
+    cases = load_eval_cases(args.fixture)
+    result = run_eval(cases, base_dir=args.base_dir)
+    _print_json(result)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lens", description="Knitweb Lens interpret CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -169,6 +177,11 @@ def build_parser() -> argparse.ArgumentParser:
     server.add_argument("--host", default="127.0.0.1")
     server.add_argument("--port", type=int, default=8765)
     server.set_defaults(func=cmd_serve)
+
+    eval_parser = sub.add_parser("eval", help="Run an offline Lens eval fixture")
+    eval_parser.add_argument("fixture")
+    eval_parser.add_argument("--base-dir", default=".")
+    eval_parser.set_defaults(func=cmd_eval)
 
     return parser
 

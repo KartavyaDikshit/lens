@@ -20,6 +20,7 @@ from .context import (
     session_from_context,
     session_markdown,
 )
+from .eval import EvalCase, load_eval_cases, run_eval
 from .retriever import Retriever
 from .reliability import ReliabilityReport, abstention_text, evaluate_session
 from .rlm import LLMAdapter, OfflineLLMAdapter, RLMHarness
@@ -33,6 +34,7 @@ __all__ = [
     "FabricWebAdapter",
     "InterpretAnswer",
     "InterpretSession",
+    "EvalCase",
     "JsonLdAdapter",
     "LLMAdapter",
     "LocalFilesAdapter",
@@ -52,6 +54,8 @@ __all__ = [
     "citations_markdown",
     "context_bundle",
     "evaluate_session",
+    "load_eval_cases",
+    "run_eval",
     "session_from_context",
     "session_markdown",
 ]
