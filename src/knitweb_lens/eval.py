@@ -8,6 +8,7 @@ from typing import Any, Iterable
 
 from .adapters import LocalFilesAdapter, SourceAdapter
 from .rlm import RLMHarness
+from .types import InterpretAnswer
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,7 @@ def run_eval(
         "false_abstentions": 0,
         "missed_abstentions": 0,
         "citation_failures": 0,
+        "faithfulness_failures": 0,
         "confidence_sum": 0,
     }
     for case in cases:
@@ -69,7 +71,8 @@ def run_eval(
             for ref in answer.citations
         )
         missing_citations = tuple(fragment for fragment in case.must_cite if fragment not in cited_text)
-        passed = (abstained == case.should_abstain) and not missing_citations
+        citation_faithful = _citation_faithful(answer)
+        passed = (abstained == case.should_abstain) and not missing_citations and citation_faithful
 
         totals["total"] += 1
         totals["confidence_sum"] += confidence
@@ -87,6 +90,8 @@ def run_eval(
             totals["false_abstentions"] += 1
         if missing_citations:
             totals["citation_failures"] += 1
+        if not citation_faithful:
+            totals["faithfulness_failures"] += 1
 
         rows.append(
             {
@@ -98,6 +103,7 @@ def run_eval(
                 "confidence": confidence,
                 "missing_citations": list(missing_citations),
                 "citation_count": len(answer.citations),
+                "citation_faithful": citation_faithful,
                 "trust_support": int(reliability.get("trust_support", 0)),
             }
         )
@@ -112,6 +118,7 @@ def run_eval(
         "false_abstentions": totals["false_abstentions"],
         "missed_abstentions": totals["missed_abstentions"],
         "citation_failures": totals["citation_failures"],
+        "faithfulness_failures": totals["faithfulness_failures"],
         "average_confidence": avg_confidence,
         "cases": rows,
     }
@@ -129,3 +136,25 @@ def load_eval_cases(path: str | Path) -> tuple[EvalCase, ...]:
     if not isinstance(values, list):
         raise ValueError("eval fixture must be a list or an object with a cases list")
     return tuple(EvalCase.from_dict(item) for item in values)
+
+
+def _citation_faithful(answer: InterpretAnswer) -> bool:
+    reliability = answer.reliability or {}
+    if bool(reliability.get("abstained", False)):
+        return True
+    if not answer.citations:
+        return False
+    answer_text = _normalize(answer.text)
+    for ranked in answer.session.ranked_chunks:
+        title = _normalize(ranked.chunk.title)
+        if title and title in answer_text:
+            continue
+        chunk_text = _normalize(ranked.chunk.text)
+        if chunk_text and chunk_text[:80] in answer_text:
+            continue
+        return False
+    return True
+
+
+def _normalize(text: str) -> str:
+    return " ".join(text.casefold().split())

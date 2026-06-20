@@ -57,6 +57,7 @@ Implemented baseline:
 - abstention below the default confidence threshold;
 - context replay preserves the same reliability behavior.
 - offline JSON eval harness via `lens eval`.
+- citation-faithfulness failures in eval reports.
 
 Related issues:
 

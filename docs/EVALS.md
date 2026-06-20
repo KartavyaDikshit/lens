@@ -39,11 +39,16 @@ CIDs, and node ids. The result report is integer-only and includes:
 - total / passed / failed;
 - true, false, and missed abstentions;
 - citation failure count;
+- citation-faithfulness failure count;
 - integer average confidence;
-- per-case confidence and missing citation fragments.
+- per-case confidence, missing citation fragments, and `citation_faithful`.
 
 Use this before changing confidence thresholds, retriever scoring, or source
 trust weighting.
+
+A non-abstained case only passes when its answer is grounded in its cited chunks.
+This catches live or custom model adapters that return plausible text while
+ignoring the retrieved context.
 
 `source_trust` is optional. Values are integers from 0 to 100 keyed by Lens
 source id, with 50 as the neutral default.

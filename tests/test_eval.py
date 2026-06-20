@@ -2,6 +2,12 @@ import json
 
 from knitweb_lens import EvalCase, load_eval_cases, run_eval
 from knitweb_lens.cli import main
+from knitweb_lens.rlm import RLMHarness
+
+
+class UnfaithfulLLM:
+    def complete(self, query, context):
+        return "This answer ignores the cited context."
 
 
 def test_run_eval_reports_abstention_and_citation_results(tmp_path):
@@ -28,6 +34,7 @@ def test_run_eval_reports_abstention_and_citation_results(tmp_path):
     assert result["total"] == 2
     assert result["passed"] == 2
     assert result["true_abstentions"] == 1
+    assert result["faithfulness_failures"] == 0
     assert isinstance(result["average_confidence"], int)
 
 
@@ -86,3 +93,22 @@ def test_eval_case_source_trust_controls_abstention(tmp_path):
 
     assert result["passed"] == 1
     assert result["cases"][0]["trust_support"] == 0
+
+
+def test_run_eval_fails_unfaithful_cited_answer(tmp_path):
+    source = tmp_path / "source.md"
+    source.write_text("Lens preserves provenance citations.", encoding="utf-8")
+    cases = [
+        EvalCase(
+            name="unfaithful",
+            query="What preserves provenance?",
+            paths=("source.md",),
+            must_cite=("source.md",),
+        )
+    ]
+
+    result = run_eval(cases, base_dir=tmp_path, harness=RLMHarness(llm=UnfaithfulLLM()))
+
+    assert result["failed"] == 1
+    assert result["faithfulness_failures"] == 1
+    assert result["cases"][0]["citation_faithful"] is False
