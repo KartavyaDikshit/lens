@@ -30,3 +30,13 @@ offline-testable.
 - Public types remain importable from `knitweb_lens`.
 - README or docs are updated when user-facing behavior changes.
 
+## Review Norm
+
+Trusted small merges are allowed when they delete no more than two files and do
+not touch control surfaces such as CI, package metadata, auth/project tooling,
+governance docs, service boundary code, or the citation/ranking contract.
+
+Always give the trusted extra developer concrete review feedback, even when the
+change is mergeable as-is. Replies should be respectful, technically specific,
+and grounded in files, tests, or behavior. See
+[`docs/REVIEW_POLICY.md`](docs/REVIEW_POLICY.md).

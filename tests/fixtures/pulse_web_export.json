@@ -1,0 +1,62 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "dst": {
+      "@id": "knit:dst",
+      "@type": "@id"
+    },
+    "edges": "knit:edges",
+    "id": "@id",
+    "knit": "did:dkg:knitweb#",
+    "record": "knit:record",
+    "rel": "knit:rel",
+    "src": {
+      "@id": "knit:src",
+      "@type": "@id"
+    },
+    "type": "@type",
+    "weight": "knit:weight"
+  },
+  "@graph": [
+    {
+      "edges": [],
+      "id": "bafyrootmaterial",
+      "record": {
+        "author": "pls1root",
+        "body": "Raw material certificate for a recycled fiber batch.",
+        "kind": "knowledge",
+        "tags": [
+          "supply-chain",
+          "fiber"
+        ],
+        "title": "Fiber batch origin"
+      },
+      "type": "KnitwebWebNode",
+      "ual": "did:dkg:knitweb/bafyrootmaterial"
+    },
+    {
+      "edges": [
+        {
+          "dst": "bafyrootmaterial",
+          "rel": "derived-from",
+          "type": "KnitwebWebEdge",
+          "weight": 1
+        }
+      ],
+      "id": "bafyfinisheditem",
+      "record": {
+        "author": "pls1maker",
+        "body": "Finished textile record derived from the recycled fiber batch and ready for Lens interpretation.",
+        "kind": "knowledge",
+        "tags": [
+          "product",
+          "lens"
+        ],
+        "title": "Finished textile provenance"
+      },
+      "type": "KnitwebWebNode",
+      "ual": "did:dkg:knitweb/bafyfinisheditem"
+    }
+  ]
+}
+

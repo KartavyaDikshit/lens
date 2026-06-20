@@ -1,4 +1,7 @@
-from knitweb_lens import JsonLdAdapter, LocalFilesAdapter, MappingRowsAdapter, VectorResultsAdapter
+import json
+from pathlib import Path
+
+from knitweb_lens import JsonLdAdapter, LocalFilesAdapter, MappingRowsAdapter, RLMHarness, VectorResultsAdapter
 
 
 def test_jsonld_adapter_preserves_cid_and_edges():
@@ -58,3 +61,16 @@ def test_vector_results_quantize_float_scores_to_integer_weight():
     assert chunks[0].weight == 812
     assert isinstance(chunks[0].weight, int)
 
+
+def test_pulse_web_export_fixture_round_trips_into_cited_answer():
+    fixture = Path(__file__).parent / "fixtures" / "pulse_web_export.json"
+    doc = json.loads(fixture.read_text(encoding="utf-8"))
+
+    adapter = JsonLdAdapter(doc, source_id="pulse-fixture", source_uri=str(fixture))
+    answer = RLMHarness().query("What derives from recycled fiber?", adapters=[adapter])
+
+    assert "recycled fiber" in answer.text.casefold()
+    refs_by_cid = {ref.cid: ref for ref in answer.citations}
+    assert "bafyfinisheditem" in refs_by_cid
+    assert "bafyrootmaterial" in refs_by_cid
+    assert refs_by_cid["bafyfinisheditem"].relation_path == ("derived-from->bafyrootmaterial",)

@@ -84,6 +84,8 @@ depend on a service SDK.
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Pulse backlog extraction](docs/PULSE_BACKLOG.md)
+- [Project 2 sync instructions](docs/PROJECT2_SYNC.md)
+- [Review policy](docs/REVIEW_POLICY.md)
 - [Research references](docs/REFERENCES.md)
 - [Developer outreach](docs/OUTREACH.md)
 - [Top 10 feedback targets](docs/FEEDBACK_TARGETS.md)
