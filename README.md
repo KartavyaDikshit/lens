@@ -92,6 +92,18 @@ HTTP replay shape:
 }
 ```
 
+## Reliability
+
+Every `InterpretAnswer` includes deterministic reliability metadata:
+
+- `confidence`: integer from 0 to 100;
+- `abstained`: true when cited support is too weak;
+- `reason`: short machine-readable explanation;
+- citation/source/support counts used to derive the score.
+
+The default harness abstains below the confidence threshold rather than forcing
+an answer from weak evidence.
+
 ## Adapters
 
 Implemented in v1:

@@ -28,6 +28,12 @@ Add deterministic, integer-only confidence, abstention, source-trust, and
 citation-faithfulness checks. This is the first major quality layer before live
 LLM adapters.
 
+Implemented baseline:
+
+- integer confidence report on every answer;
+- abstention below the default confidence threshold;
+- context replay preserves the same reliability behavior.
+
 Related issues:
 
 - https://github.com/Knitweb/lens/issues/5
@@ -54,4 +60,3 @@ Related issue: https://github.com/Knitweb/lens/issues/3
 Small trusted merges are allowed under `docs/REVIEW_POLICY.md`, but reliability,
 service boundary, package metadata, CI, and project-sync changes are control
 surfaces and need maintainer review.
-

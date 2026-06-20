@@ -32,6 +32,13 @@ This makes retrieval reviewable and replayable. A user can export context on one
 machine, inspect or sign it elsewhere, then ask an offline or live model adapter
 to answer from exactly that selected evidence.
 
+## Reliability
+
+Every answer carries an integer-only reliability report. Confidence is derived
+from lexical support, citation count, source diversity, and provenance support.
+If confidence falls below the threshold, Lens returns an abstention message
+instead of asking the model to fabricate an answer from weak evidence.
+
 ## Lessons From Similar Systems
 
 - Hyperon/MeTTa: represent knowledge as queryable atoms in a graph-like store,

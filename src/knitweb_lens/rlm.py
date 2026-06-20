@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Iterable, Protocol, Sequence
 
 from .adapters import SourceAdapter
+from .reliability import abstention_text, evaluate_session
 from .retriever import Retriever
 from .types import Chunk, InterpretAnswer, InterpretSession, RankedChunk
 from .util import stable_id, tokenize
@@ -57,9 +58,16 @@ class RLMHarness:
     citation, or tests.
     """
 
-    def __init__(self, *, retriever: Retriever | None = None, llm: LLMAdapter | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        retriever: Retriever | None = None,
+        llm: LLMAdapter | None = None,
+        min_confidence: int = 25,
+    ) -> None:
         self.retriever = retriever or Retriever()
         self.llm = llm or OfflineLLMAdapter()
+        self.min_confidence = min_confidence
 
     def collect(self, adapters: Iterable[SourceAdapter]) -> tuple[Chunk, ...]:
         chunks: list[Chunk] = []
@@ -126,8 +134,17 @@ class RLMHarness:
             max_chunks=max_chunks,
             budget_chars=budget_chars,
         )
-        text = self.llm.complete(query, session.ranked_chunks)
-        return InterpretAnswer(query=query, text=text, session=session)
+        report = evaluate_session(session, min_confidence=self.min_confidence)
+        if report.abstained:
+            text = abstention_text(report)
+        else:
+            text = self.llm.complete(query, session.ranked_chunks)
+        return InterpretAnswer(
+            query=query,
+            text=text,
+            session=session,
+            reliability=report.to_dict(),
+        )
 
     def export_context(
         self,

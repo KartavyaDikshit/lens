@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
+from .reliability import abstention_text, evaluate_session
 from .rlm import LLMAdapter, OfflineLLMAdapter
 from .types import Chunk, ChunkRef, InterpretAnswer, InterpretSession, RankedChunk
 
@@ -32,10 +33,16 @@ def session_from_context(bundle: dict[str, Any]) -> InterpretSession:
 def answer_from_context(bundle: dict[str, Any], *, llm: LLMAdapter | None = None) -> InterpretAnswer:
     session = session_from_context(bundle)
     model = llm or OfflineLLMAdapter()
+    report = evaluate_session(session)
+    if report.abstained:
+        text = abstention_text(report)
+    else:
+        text = model.complete(session.query, session.ranked_chunks)
     return InterpretAnswer(
         query=session.query,
-        text=model.complete(session.query, session.ranked_chunks),
+        text=text,
         session=session,
+        reliability=report.to_dict(),
     )
 
 
@@ -138,11 +145,20 @@ def session_markdown(session: InterpretSession) -> str:
 
 
 def answer_markdown(answer: InterpretAnswer) -> str:
+    reliability = answer.reliability or {}
     return "\n".join(
         [
             f"# Lens Answer: {answer.session.session_id}",
             "",
             f"Query: `{answer.query}`",
+            "",
+            "## Reliability",
+            "",
+            f"Confidence: {reliability.get('confidence', 'n/a')}",
+            "",
+            f"Abstained: {reliability.get('abstained', 'n/a')}",
+            "",
+            f"Reason: {reliability.get('reason', 'n/a')}",
             "",
             "## Answer",
             "",
@@ -154,4 +170,3 @@ def answer_markdown(answer: InterpretAnswer) -> str:
             "",
         ]
     )
-

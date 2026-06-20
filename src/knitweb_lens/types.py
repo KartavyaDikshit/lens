@@ -184,6 +184,7 @@ class InterpretAnswer:
     query: str
     text: str
     session: InterpretSession
+    reliability: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         _require_str("query", self.query)
@@ -199,5 +200,5 @@ class InterpretAnswer:
             "text": self.text,
             "session": self.session.to_dict(),
             "citations": [ref.to_dict() for ref in self.citations],
+            "reliability": self.reliability,
         }
-

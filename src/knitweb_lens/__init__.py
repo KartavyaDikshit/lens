@@ -21,6 +21,7 @@ from .context import (
     session_markdown,
 )
 from .retriever import Retriever
+from .reliability import ReliabilityReport, abstention_text, evaluate_session
 from .rlm import LLMAdapter, OfflineLLMAdapter, RLMHarness
 from .types import Chunk, ChunkRef, InterpretAnswer, InterpretSession, RankedChunk
 
@@ -40,14 +41,17 @@ __all__ = [
     "RdfJsonLdAdapter",
     "Retriever",
     "RLMHarness",
+    "ReliabilityReport",
     "RankedChunk",
     "SourceAdapter",
     "VectorResultsAdapter",
     "answer_from_context",
     "answer_markdown",
+    "abstention_text",
     "citation_lines",
     "citations_markdown",
     "context_bundle",
+    "evaluate_session",
     "session_from_context",
     "session_markdown",
 ]
