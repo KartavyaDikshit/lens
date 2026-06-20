@@ -69,6 +69,7 @@ def ranked_chunk_from_dict(value: dict[str, Any]) -> RankedChunk:
         provenance_score=int(value["provenance_score"]),
         priority_score=int(value["priority_score"]),
         weight_score=int(value["weight_score"]),
+        trust_score=int(value.get("trust_score", 0)),
     )
 
 
@@ -138,7 +139,7 @@ def session_markdown(session: InterpretSession) -> str:
             [
                 f"### {index}. {chunk.title or chunk.ref.cid or chunk.ref.node_id or chunk.ref.source_id}",
                 "",
-                f"Score: {item.score} (lexical {item.lexical_score}, priority {item.priority_score}, provenance {item.provenance_score}, weight {item.weight_score})",
+                f"Score: {item.score} (lexical {item.lexical_score}, priority {item.priority_score}, provenance {item.provenance_score}, weight {item.weight_score}, trust {item.trust_score})",
                 "",
                 "```text",
                 chunk.text,

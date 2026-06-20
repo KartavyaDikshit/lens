@@ -126,6 +126,9 @@ Every `InterpretAnswer` includes deterministic reliability metadata:
 
 The default harness abstains below the confidence threshold rather than forcing
 an answer from weak evidence.
+When provided, source trust also contributes an integer `trust_score` to
+retrieval ranking so low-trust sources can be down-weighted before answer
+synthesis.
 
 ## Adapters
 

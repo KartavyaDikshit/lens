@@ -66,7 +66,7 @@ class RLMHarness:
         min_confidence: int = 250,
         source_trust: dict[str, int] | None = None,
     ) -> None:
-        self.retriever = retriever or Retriever()
+        self.retriever = retriever or Retriever(source_trust=source_trust)
         self.llm = llm or OfflineLLMAdapter()
         self.min_confidence = min_confidence
         self.source_trust = source_trust

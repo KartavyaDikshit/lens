@@ -123,6 +123,7 @@ class RankedChunk:
     provenance_score: int
     priority_score: int
     weight_score: int
+    trust_score: int = 0
 
     def __post_init__(self) -> None:
         _require_int("score", self.score)
@@ -130,6 +131,7 @@ class RankedChunk:
         _require_int("provenance_score", self.provenance_score)
         _require_int("priority_score", self.priority_score)
         _require_int("weight_score", self.weight_score)
+        _require_int("trust_score", self.trust_score)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -139,6 +141,7 @@ class RankedChunk:
             "provenance_score": self.provenance_score,
             "priority_score": self.priority_score,
             "weight_score": self.weight_score,
+            "trust_score": self.trust_score,
         }
 
 

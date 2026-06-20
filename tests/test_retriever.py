@@ -35,3 +35,26 @@ def test_retriever_tie_breaks_by_source_identity():
 
     assert [item.chunk.ref.source_id for item in ranked] == ["a", "b"]
 
+
+def test_retriever_source_trust_changes_ranking_with_integer_score():
+    chunks = [
+        Chunk(ChunkRef("low-trust", cid="low"), title="Pulse", text="Pulse evidence", priority=10),
+        Chunk(ChunkRef("high-trust", cid="high"), title="Pulse", text="Pulse evidence", priority=10),
+    ]
+
+    ranked = Retriever(source_trust={"low-trust": 0, "high-trust": 100}).retrieve("Pulse", chunks, limit=2)
+
+    assert [item.chunk.ref.source_id for item in ranked] == ["high-trust", "low-trust"]
+    assert ranked[0].trust_score == 500
+    assert ranked[1].trust_score == -500
+
+
+def test_retriever_rejects_invalid_source_trust():
+    chunks = [Chunk(ChunkRef("s", cid="a"), title="Pulse", text="Pulse evidence", priority=10)]
+
+    try:
+        Retriever(source_trust={"s": 101}).retrieve("Pulse", chunks)
+    except ValueError as exc:
+        assert "between 0 and 100" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")

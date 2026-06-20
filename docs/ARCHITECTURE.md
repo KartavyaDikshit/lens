@@ -84,6 +84,10 @@ source diversity, provenance support, and optional source trust. If confidence
 falls below the threshold, Lens returns an abstention message instead of asking
 the model to fabricate an answer from weak evidence.
 
+When source trust is supplied, retrieval also includes an integer `trust_score`
+component. This lets Lens down-rank low-trust exported rows before generation
+without changing the source graph or storing trust in Pulse/OriginTrail.
+
 The confidence value is a PLN-style evidence axis. It describes how much support
 Lens found for the cited context; it is not a replacement for the answer text or
 the citations themselves.

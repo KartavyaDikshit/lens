@@ -9,11 +9,21 @@ from .types import Chunk, RankedChunk
 from .util import tokenize, unique_tokens
 
 
+def _trust_score(source_id: str, source_trust: dict[str, int] | None) -> int:
+    value = 50 if source_trust is None else source_trust.get(source_id, 50)
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError("source trust values must be int")
+    if value < 0 or value > 100:
+        raise ValueError("source trust values must be between 0 and 100")
+    return (value - 50) * 10
+
+
 class Retriever:
     """Rank chunks by lexical match, source priority, provenance, and weight."""
 
-    def __init__(self, *, phrase_bonus: int = 40) -> None:
+    def __init__(self, *, phrase_bonus: int = 40, source_trust: dict[str, int] | None = None) -> None:
         self.phrase_bonus = phrase_bonus
+        self.source_trust = dict(source_trust or {})
 
     def score(self, query: str, chunk: Chunk) -> RankedChunk:
         q_terms = tuple(term for term in tokenize(query) if len(term) > 1)
@@ -33,9 +43,10 @@ class Retriever:
 
         priority_score = chunk.priority * 100
         weight_score = max(chunk.weight, 0) * 10
+        trust_score = _trust_score(chunk.ref.source_id, self.source_trust)
         provenance_score = max(0, 100 - max(chunk.distance, 0) * 20)
         provenance_score += len(chunk.ref.relation_path) * 5
-        score = lexical + priority_score + weight_score + provenance_score
+        score = lexical + priority_score + weight_score + provenance_score + trust_score
         return RankedChunk(
             chunk=chunk,
             score=score,
@@ -43,6 +54,7 @@ class Retriever:
             provenance_score=provenance_score,
             priority_score=priority_score,
             weight_score=weight_score,
+            trust_score=trust_score,
         )
 
     def rank(self, query: str, chunks: Iterable[Chunk]) -> tuple[RankedChunk, ...]:
@@ -64,4 +76,3 @@ class Retriever:
         if limit < 0:
             raise ValueError("limit must be non-negative")
         return self.rank(query, chunks)[:limit]
-

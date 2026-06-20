@@ -56,4 +56,5 @@ Each confidence band includes `total`, `passed`, `citation_failures`,
 calibration table without introducing floats.
 
 `source_trust` is optional. Values are integers from 0 to 100 keyed by Lens
-source id, with 50 as the neutral default.
+source id, with 50 as the neutral default. Source trust influences retrieval
+ranking through `trust_score` and reliability reporting through `trust_support`.

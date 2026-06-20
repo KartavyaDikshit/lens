@@ -29,6 +29,7 @@ def test_context_bundle_round_trip_preserves_session(tmp_path):
     assert rebuilt.session_id == session.session_id
     assert rebuilt.citations == session.citations
     assert rebuilt.ranked_chunks[0].score == session.ranked_chunks[0].score
+    assert rebuilt.ranked_chunks[0].trust_score == session.ranked_chunks[0].trust_score
 
 
 def test_answer_from_context_uses_saved_chunks(tmp_path):
@@ -52,6 +53,7 @@ def test_context_markdown_rendering_contains_scores_and_citations(tmp_path):
     assert "## Citations" in answer_markdown(answer)
     rendered = session_markdown(answer.session)
     assert "Score:" in rendered
+    assert "trust" in rendered
     assert str(path) in rendered
 
 
@@ -84,4 +86,3 @@ def test_http_interpret_accepts_context_bundle(tmp_path):
 
     assert "HTTP replay" in payload["text"]
     assert payload["context"]["format"] == "knitweb-lens-context"
-
