@@ -36,6 +36,8 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -e ".[dev]"
 lens query "What is Lens for?" README.md --json
+lens export-context "What is Lens for?" README.md --out context.json
+lens render-context context.json --answer
 python -m pytest
 ```
 
@@ -45,7 +47,7 @@ Run the standard-library HTTP endpoint:
 lens serve README.md --host 127.0.0.1 --port 8765
 curl -s http://127.0.0.1:8765/interpret \
   -H 'content-type: application/json' \
-  -d '{"query":"What does Lens preserve?"}'
+  -d '{"query":"What does Lens preserve?","include_context":true}'
 ```
 
 ## Core API
@@ -65,6 +67,30 @@ Adapters normalize source systems into `Chunk` objects. `Retriever` ranks chunks
 with integer-only scores and deterministic tie breaks. `RLMHarness` supplies an
 offline deterministic model adapter by default, so all tests run without API
 keys, embeddings, network access, or vector databases.
+
+## Context Bundles
+
+`lens export-context` writes a portable JSON bundle containing the selected
+ranked chunks, scores, query, and citations. The bundle can be reviewed,
+rendered, replayed, or sent back to `POST /interpret` without re-reading the
+original adapters.
+
+```bash
+lens export-context "How does Lens cite sources?" README.md --out context.json
+lens answer-context context.json --markdown
+```
+
+HTTP replay shape:
+
+```json
+{
+  "context": {
+    "format": "knitweb-lens-context",
+    "version": 1,
+    "session": {}
+  }
+}
+```
 
 ## Adapters
 

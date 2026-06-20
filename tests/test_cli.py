@@ -14,3 +14,20 @@ def test_cli_query_json(tmp_path, capsys):
     assert payload["citations"]
     assert payload["session"]["ranked_chunks"]
 
+
+def test_cli_context_export_render_and_answer(tmp_path, capsys):
+    source = tmp_path / "note.md"
+    context = tmp_path / "context.json"
+    source.write_text("CLI context export can be rendered and replayed.", encoding="utf-8")
+
+    assert main(["export-context", "What can be replayed?", str(source), "--out", str(context)]) == 0
+    assert context.exists()
+
+    assert main(["render-context", str(context), "--answer"]) == 0
+    rendered = capsys.readouterr().out
+    assert "## Answer" in rendered
+    assert "CLI context export" in rendered
+
+    assert main(["answer-context", str(context), "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["citations"]

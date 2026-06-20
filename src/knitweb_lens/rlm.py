@@ -137,12 +137,15 @@ class RLMHarness:
         max_chunks: int = 8,
         budget_chars: int = 4000,
     ) -> dict:
-        return self.session(
+        from .context import context_bundle
+
+        session = self.session(
             query,
             adapters=adapters,
             max_chunks=max_chunks,
             budget_chars=budget_chars,
-        ).to_dict()
+        )
+        return context_bundle(session)
 
 
 def _trim_ranked(item: RankedChunk, budget_chars: int) -> RankedChunk:
@@ -150,4 +153,3 @@ def _trim_ranked(item: RankedChunk, budget_chars: int) -> RankedChunk:
 
     trimmed_text = item.chunk.text[:budget_chars].rstrip()
     return replace(item, chunk=replace(item.chunk, text=trimmed_text))
-

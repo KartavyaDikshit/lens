@@ -18,6 +18,20 @@ Lens v1 is an ephemeral interpret layer over content-addressed fabric data.
 4. An `LLMAdapter` turns selected chunks into an answer.
 5. `InterpretAnswer` returns text plus citations back to each `ChunkRef`.
 
+## Context Bundles
+
+Lens context bundles are portable JSON snapshots of the interpret context. They
+store:
+
+- the session id and query;
+- budget settings and used context;
+- ranked chunks and integer score breakdowns;
+- every citation back to source id, URI, CID/node id, and relation path.
+
+This makes retrieval reviewable and replayable. A user can export context on one
+machine, inspect or sign it elsewhere, then ask an offline or live model adapter
+to answer from exactly that selected evidence.
+
 ## Lessons From Similar Systems
 
 - Hyperon/MeTTa: represent knowledge as queryable atoms in a graph-like store,
@@ -43,4 +57,3 @@ Lens v1 is an ephemeral interpret layer over content-addressed fabric data.
 - No required LLM API key.
 - No durable writes to Pulse.
 - No ranking floats in returned metadata.
-

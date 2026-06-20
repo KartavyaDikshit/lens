@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .adapters import LocalFilesAdapter
+from .context import answer_from_context, context_bundle
 from .rlm import RLMHarness
 
 
@@ -42,16 +43,22 @@ def make_handler(base_paths: Iterable[str | Path]) -> type[BaseHTTPRequestHandle
             try:
                 length = int(self.headers.get("content-length", "0"))
                 payload = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
-                query = payload["query"]
-                paths = tuple(configured_paths) + tuple(payload.get("paths", ()))
-                adapters = [LocalFilesAdapter(paths)] if paths else []
-                answer = RLMHarness().query(
-                    query,
-                    adapters=adapters,
-                    max_chunks=int(payload.get("max_chunks", 8)),
-                    budget_chars=int(payload.get("budget_chars", 4000)),
-                )
-                _json_response(self, 200, answer.to_dict())
+                if "context" in payload:
+                    answer = answer_from_context(payload["context"])
+                else:
+                    query = payload["query"]
+                    paths = tuple(configured_paths) + tuple(payload.get("paths", ()))
+                    adapters = [LocalFilesAdapter(paths)] if paths else []
+                    answer = RLMHarness().query(
+                        query,
+                        adapters=adapters,
+                        max_chunks=int(payload.get("max_chunks", 8)),
+                        budget_chars=int(payload.get("budget_chars", 4000)),
+                    )
+                response = answer.to_dict()
+                if payload.get("include_context"):
+                    response["context"] = context_bundle(answer.session)
+                _json_response(self, 200, response)
             except Exception as exc:
                 _json_response(self, 400, {"error": str(exc)})
 
@@ -67,4 +74,3 @@ def serve(paths: Iterable[str | Path], *, host: str = "127.0.0.1", port: int = 8
         pass
     finally:
         httpd.server_close()
-

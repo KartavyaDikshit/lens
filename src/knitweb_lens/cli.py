@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .adapters import LocalFilesAdapter, SourceAdapter
+from .context import answer_from_context, answer_markdown, session_from_context, session_markdown
 from .rlm import RLMHarness
 from .server import serve
 from .util import stable_json
@@ -23,6 +24,13 @@ def _adapters(paths: Iterable[str]) -> list[SourceAdapter]:
 
 def _print_json(value: dict) -> None:
     print(json.dumps(value, indent=2, sort_keys=True))
+
+
+def _write_text_or_print(text: str, out: str | None) -> None:
+    if out:
+        Path(out).write_text(text, encoding="utf-8")
+    else:
+        print(text, end="" if text.endswith("\n") else "\n")
 
 
 def cmd_index(args: argparse.Namespace) -> int:
@@ -42,6 +50,8 @@ def cmd_query(args: argparse.Namespace) -> int:
     )
     if args.json:
         _print_json(answer.to_dict())
+    elif args.markdown:
+        print(answer_markdown(answer), end="")
     else:
         print(answer.text)
         if answer.citations:
@@ -65,14 +75,36 @@ def cmd_session(args: argparse.Namespace) -> int:
 
 def cmd_export_context(args: argparse.Namespace) -> int:
     harness = RLMHarness()
-    _print_json(
-        harness.export_context(
-            args.query,
-            adapters=_adapters(args.paths),
-            max_chunks=args.max_chunks,
-            budget_chars=args.budget_chars,
-        )
+    bundle = harness.export_context(
+        args.query,
+        adapters=_adapters(args.paths),
+        max_chunks=args.max_chunks,
+        budget_chars=args.budget_chars,
     )
+    text = json.dumps(bundle, indent=2, sort_keys=True) + "\n"
+    _write_text_or_print(text, args.out)
+    return 0
+
+
+def cmd_render_context(args: argparse.Namespace) -> int:
+    bundle = json.loads(Path(args.context_file).read_text(encoding="utf-8"))
+    if args.answer:
+        text = answer_markdown(answer_from_context(bundle))
+    else:
+        text = session_markdown(session_from_context(bundle))
+    _write_text_or_print(text, args.out)
+    return 0
+
+
+def cmd_answer_context(args: argparse.Namespace) -> int:
+    bundle = json.loads(Path(args.context_file).read_text(encoding="utf-8"))
+    answer = answer_from_context(bundle)
+    if args.json:
+        _print_json(answer.to_dict())
+    elif args.markdown:
+        print(answer_markdown(answer), end="")
+    else:
+        print(answer.text)
     return 0
 
 
@@ -95,6 +127,7 @@ def build_parser() -> argparse.ArgumentParser:
     query.add_argument("--max-chunks", type=int, default=8)
     query.add_argument("--budget-chars", type=int, default=4000)
     query.add_argument("--json", action="store_true")
+    query.add_argument("--markdown", action="store_true")
     query.set_defaults(func=cmd_query)
 
     session = sub.add_parser("session", help="Return the retrieved interpret session as JSON")
@@ -109,7 +142,20 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("paths", nargs="+")
     context.add_argument("--max-chunks", type=int, default=8)
     context.add_argument("--budget-chars", type=int, default=4000)
+    context.add_argument("--out")
     context.set_defaults(func=cmd_export_context)
+
+    render = sub.add_parser("render-context", help="Render a saved Lens context bundle")
+    render.add_argument("context_file")
+    render.add_argument("--answer", action="store_true", help="Render the offline answer instead of raw context")
+    render.add_argument("--out")
+    render.set_defaults(func=cmd_render_context)
+
+    answer_context = sub.add_parser("answer-context", help="Answer from a saved Lens context bundle")
+    answer_context.add_argument("context_file")
+    answer_context.add_argument("--json", action="store_true")
+    answer_context.add_argument("--markdown", action="store_true")
+    answer_context.set_defaults(func=cmd_answer_context)
 
     server = sub.add_parser("serve", help="Serve POST /interpret over stdlib HTTP")
     server.add_argument("paths", nargs="*")
@@ -134,4 +180,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
